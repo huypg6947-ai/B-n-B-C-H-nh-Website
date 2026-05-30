@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đặt Món – Bún Bò Cô Hạnh</title>
+  <meta name="description" content="Đặt món online Bún Bò Cô Hạnh – giao hàng tận nơi hoặc mang về. Thanh toán tiền mặt hoặc QR.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── ORDER PAGE SPECIFIC ── */
+    .order-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 32px;
+      align-items: start;
+      padding: 40px 0 100px;
+    }
+
+    /* MENU PICKER */
+    .order-menu { }
+    .order-cat-title {
+      font-family: var(--font-display);
+      font-size: 18px; font-weight: 700;
+      color: var(--brown);
+      margin: 28px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .order-cat-title:first-child { margin-top: 0; }
+    .order-items { display: flex; flex-direction: column; gap: 8px; }
+    .order-item {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .order-item:hover { border-color: var(--red); box-shadow: var(--shadow-sm); }
+    .order-item.in-cart { border-color: var(--red); background: #FFF5F3; }
+    .oi-emoji { font-size: 26px; flex-shrink: 0; }
+    .oi-info { flex: 1; }
+    .oi-name { font-size: 14px; font-weight: 600; color: var(--brown); }
+    .oi-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .oi-price { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--red); flex-shrink: 0; }
+    .oi-qty {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    .qty-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      font-size: 16px; font-weight: 700;
+      color: var(--brown);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+    .qty-btn:hover { background: var(--red); border-color: var(--red); color: var(--white); }
+    .qty-num { font-size: 15px; font-weight: 700; color: var(--brown); min-width: 20px; text-align: center; }
+
+    /* CART SIDEBAR */
+    .order-cart {
+      position: sticky;
+      top: calc(var(--nav-h) + 20px);
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .cart-header {
+      background: var(--brown);
+      padding: 18px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cart-header h3 { color: var(--white); font-family: var(--font-display); font-size: 18px; margin: 0; }
+    .cart-count {
+      background: var(--red); color: var(--white);
+      font-size: 12px; font-weight: 700;
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cart-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .cart-empty-icon { font-size: 36px; margin-bottom: 10px; }
+    .cart-items { padding: 12px; max-height: 220px; overflow-y: auto; }
+    .cart-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .ci-name { flex: 1; color: var(--text); font-weight: 500; }
+    .ci-qty { color: var(--text-muted); }
+    .ci-price { color: var(--red); font-weight: 600; }
+    .ci-remove { color: var(--text-muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 2px; }
+    .ci-remove:hover { color: var(--red); }
+    .cart-total {
+      padding: 12px 16px;
+      border-top: 2px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .cart-total span { font-size: 14px; font-weight: 600; color: var(--text-mid); }
+    .cart-total strong { font-family: var(--font-display); font-size: 22px; color: var(--red); }
+
+    /* CUSTOMER FORM */
+    .cart-form { padding: 16px; border-top: 1px solid var(--border); }
+    .form-group { margin-bottom: 12px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text-mid); margin-bottom: 5px; letter-spacing: .03em;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--font-body); font-size: 14px;
+      color: var(--text); background: var(--cream);
+      transition: border-color 0.2s;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--red);
+      background: var(--white);
+    }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+
+    /* ORDER TYPE */
+    .order-type-btns { display: flex; gap: 8px; }
+    .ot-btn {
+      flex: 1; padding: 10px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--cream);
+      font-family: var(--font-body); font-size: 13px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; text-align: center;
+      transition: all 0.2s;
+    }
+    .ot-btn.active { background: var(--red); border-color: var(--red); color: var(--white); }
+
+    /* PAYMENT */
+    .payment-opts { display: flex; gap: 8px; }
+    .pay-opt {
+      flex: 1; padding: 10px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--cream);
+      font-family: var(--font-body); font-size: 13px; font-weight: 600;
+      color: var(--text-mid); cursor: pointer; text-align: center;
+      transition: all 0.2s;
+    }
+    .pay-opt.active { background: var(--brown); border-color: var(--brown); color: var(--white); }
+    .qr-box {
+      display: none;
+      margin-top: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-align: center;
+    }
+    .qr-box.show { display: block; }
+    .qr-box img { width: 100%; max-width: 220px; margin: 0 auto; display: block; padding: 8px; }
+    .qr-info { background: var(--cream-dark); padding: 10px; font-size: 12px; color: var(--text-mid); }
+    .qr-info strong { display: block; font-size: 13px; color: var(--brown); }
+
+    /* SUBMIT */
+    .submit-section { padding: 0 16px 16px; }
+    .btn-zalo {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px;
+      background: #0068FF; color: var(--white);
+      border: none; border-radius: 10px;
+      font-family: var(--font-body); font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-bottom: 10px;
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none;
+    }
+    .btn-zalo:hover { background: #0052cc; transform: translateY(-1px); }
+    .btn-sms {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px;
+      background: var(--cream-dark); color: var(--brown);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-sms:hover { background: var(--cream); border-color: var(--brown); }
+    .submit-note { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; line-height: 1.5; }
+
+    /* Empty cart disable */
+    .btn-zalo.disabled, .btn-sms.disabled {
+      opacity: 0.4; pointer-events: none; cursor: not-allowed;
+    }
+
+    /* SUCCESS TOAST */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--brown); color: var(--white);
+      padding: 14px 28px; border-radius: 40px;
+      font-size: 14px; font-weight: 600;
+      box-shadow: var(--shadow);
+      transition: transform 0.4s ease;
+      z-index: 999; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 860px) {
+      .order-layout { grid-template-columns: 1fr; }
+      .order-cart { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-vn">BÚN BÒ</span>
+        <span class="logo-name">Cô Hạnh</span>
+      </a>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Trang chủ</a></li>
+        <li><a href="menu.html">Thực đơn</a></li>
+        <li><a href="story.html">Câu chuyện</a></li>
+        <li><a href="reviews.html">Đánh giá</a></li>
+        <li><a href="contact.html">Liên hệ</a></li>
+        <li><a href="order.html" class="nav-cta active">🛒 Đặt món</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="container">
+      <div class="section-eyebrow">Đặt món online</div>
+      <h1 class="page-hero-title">Chọn món &<br><em>đặt ngay</em></h1>
+      <p class="page-hero-sub">Đơn hàng gửi thẳng đến Cô Hạnh qua Zalo · Giao hàng hoặc mang về</p>
+    </div>
+  </section>
+
+  <section style="background:var(--cream); padding-top: 0;">
+    <div class="container">
+      <div class="order-layout">
+
+        <!-- LEFT: MENU PICKER -->
+        <div class="order-menu">
+
+          <div class="order-cat-title">⭐ Sao Hạng A</div>
+          <div class="order-items">
+            <div class="order-item" data-id="1" data-name="Xương, Nạm, Chả" data-price="70000" data-emoji="🍜">
+              <div class="oi-emoji">🍜</div>
+              <div class="oi-info"><div class="oi-name">Xương, Nạm, Chả</div><div class="oi-desc">Combo bán chạy nhất</div></div>
+              <div class="oi-price">70k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,1,-1)">−</button>
+                <span class="qty-num" id="qty-1">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,1,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="2" data-name="Xương Bò" data-price="65000" data-emoji="🦴">
+              <div class="oi-emoji">🦴</div>
+              <div class="oi-info"><div class="oi-name">Xương Bò</div><div class="oi-desc">Thanh vị, ngọt tự nhiên</div></div>
+              <div class="oi-price">65k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,2,-1)">−</button>
+                <span class="qty-num" id="qty-2">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,2,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="3" data-name="Nạm, Chả" data-price="60000" data-emoji="🥩">
+              <div class="oi-emoji">🥩</div>
+              <div class="oi-info"><div class="oi-name">Nạm, Chả</div><div class="oi-desc">Nạm mềm, chả cua thơm</div></div>
+              <div class="oi-price">60k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,3,-1)">−</button>
+                <span class="qty-num" id="qty-3">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,3,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="4" data-name="Nạm, Tái" data-price="60000" data-emoji="🥣">
+              <div class="oi-emoji">🥣</div>
+              <div class="oi-info"><div class="oi-name">Nạm, Tái</div><div class="oi-desc">Nạm bò + tái hồng tươi</div></div>
+              <div class="oi-price">60k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,4,-1)">−</button>
+                <span class="qty-num" id="qty-4">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,4,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="5" data-name="Giò Heo" data-price="60000" data-emoji="🍖">
+              <div class="oi-emoji">🍖</div>
+              <div class="oi-info"><div class="oi-name">Giò Heo</div><div class="oi-desc">Giò heo béo ngậy mềm tan</div></div>
+              <div class="oi-price">60k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,5,-1)">−</button>
+                <span class="qty-num" id="qty-5">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,5,1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-cat-title">🥢 Tô Cũng Cũng – 1 Topping</div>
+          <div class="order-items">
+            <div class="order-item" data-id="6" data-name="Tái" data-price="55000" data-emoji="🥩">
+              <div class="oi-emoji">🥩</div>
+              <div class="oi-info"><div class="oi-name">Tái</div><div class="oi-desc">Thịt bò tái hồng tươi</div></div>
+              <div class="oi-price">55k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,6,-1)">−</button>
+                <span class="qty-num" id="qty-6">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,6,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="7" data-name="Nạm" data-price="55000" data-emoji="🍖">
+              <div class="oi-emoji">🍖</div>
+              <div class="oi-info"><div class="oi-name">Nạm</div><div class="oi-desc">Nạm bò mềm ngọt</div></div>
+              <div class="oi-price">55k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,7,-1)">−</button>
+                <span class="qty-num" id="qty-7">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,7,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="8" data-name="Gân" data-price="55000" data-emoji="✨">
+              <div class="oi-emoji">✨</div>
+              <div class="oi-info"><div class="oi-name">Gân</div><div class="oi-desc">Gân bò giòn sần sật</div></div>
+              <div class="oi-price">55k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,8,-1)">−</button>
+                <span class="qty-num" id="qty-8">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,8,1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-cat-title">🍜 Tô No Nê – 2 Topping</div>
+          <div class="order-items">
+            <div class="order-item" data-id="9" data-name="Nạm, Gân" data-price="60000" data-emoji="✨">
+              <div class="oi-emoji">✨</div>
+              <div class="oi-info"><div class="oi-name">Nạm, Gân</div></div>
+              <div class="oi-price">60k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,9,-1)">−</button>
+                <span class="qty-num" id="qty-9">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,9,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="10" data-name="Tái, Chả" data-price="60000" data-emoji="🥩">
+              <div class="oi-emoji">🥩</div>
+              <div class="oi-info"><div class="oi-name">Tái, Chả</div></div>
+              <div class="oi-price">60k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,10,-1)">−</button>
+                <span class="qty-num" id="qty-10">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,10,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="11" data-name="Xương, Nạm" data-price="65000" data-emoji="🦴">
+              <div class="oi-emoji">🦴</div>
+              <div class="oi-info"><div class="oi-name">Xương, Nạm</div></div>
+              <div class="oi-price">65k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,11,-1)">−</button>
+                <span class="qty-num" id="qty-11">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,11,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="12" data-name="Xương, Chả" data-price="65000" data-emoji="🍜">
+              <div class="oi-emoji">🍜</div>
+              <div class="oi-info"><div class="oi-name">Xương, Chả</div></div>
+              <div class="oi-price">65k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,12,-1)">−</button>
+                <span class="qty-num" id="qty-12">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,12,1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-cat-title">🔥 Tô Ê Hề – 3–4 Topping</div>
+          <div class="order-items">
+            <div class="order-item" data-id="13" data-name="Tái, Nạm, Chả" data-price="70000" data-emoji="🥣">
+              <div class="oi-emoji">🥣</div>
+              <div class="oi-info"><div class="oi-name">Tái, Nạm, Chả</div></div>
+              <div class="oi-price">70k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,13,-1)">−</button>
+                <span class="qty-num" id="qty-13">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,13,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="14" data-name="Giò, Nạm, Chả" data-price="70000" data-emoji="🍖">
+              <div class="oi-emoji">🍖</div>
+              <div class="oi-info"><div class="oi-name">Giò, Nạm, Chả</div></div>
+              <div class="oi-price">70k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,14,-1)">−</button>
+                <span class="qty-num" id="qty-14">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,14,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="15" data-name="Xương, Giò, Nạm, Chả" data-price="85000" data-emoji="🏆">
+              <div class="oi-emoji">🏆</div>
+              <div class="oi-info"><div class="oi-name">Xương, Giò, Nạm, Chả</div><div class="oi-desc">4 topping siêu đầy</div></div>
+              <div class="oi-price">85k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,15,-1)">−</button>
+                <span class="qty-num" id="qty-15">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,15,1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-cat-title">👑 Siêu Cấp Vô Địch</div>
+          <div class="order-items">
+            <div class="order-item" data-id="16" data-name="Siêu Cấp Vô Địch (6 topping)" data-price="150000" data-emoji="🏆">
+              <div class="oi-emoji">🏆</div>
+              <div class="oi-info"><div class="oi-name">Siêu Cấp Vô Địch</div><div class="oi-desc">Xương + Giò + Tái + Nạm + Gân + Chả</div></div>
+              <div class="oi-price">150k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,16,-1)">−</button>
+                <span class="qty-num" id="qty-16">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,16,1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-cat-title">➕ Món Thêm</div>
+          <div class="order-items">
+            <div class="order-item" data-id="17" data-name="Chả (thêm)" data-price="12000" data-emoji="🧆">
+              <div class="oi-emoji">🧆</div>
+              <div class="oi-info"><div class="oi-name">Chả (thêm)</div></div>
+              <div class="oi-price">12k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,17,-1)">−</button>
+                <span class="qty-num" id="qty-17">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,17,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="18" data-name="Giò Heo (thêm)" data-price="35000" data-emoji="🍖">
+              <div class="oi-emoji">🍖</div>
+              <div class="oi-info"><div class="oi-name">Giò Heo (thêm)</div></div>
+              <div class="oi-price">35k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,18,-1)">−</button>
+                <span class="qty-num" id="qty-18">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,18,1)">+</button>
+              </div>
+            </div>
+            <div class="order-item" data-id="19" data-name="Bún/Mì Gói (thêm)" data-price="15000" data-emoji="🍝">
+              <div class="oi-emoji">🍝</div>
+              <div class="oi-info"><div class="oi-name">Bún / Mì Gói (thêm)</div></div>
+              <div class="oi-price">15k</div>
+              <div class="oi-qty">
+                <button class="qty-btn minus" onclick="changeQty(event,19,-1)">−</button>
+                <span class="qty-num" id="qty-19">0</span>
+                <button class="qty-btn plus" onclick="changeQty(event,19,1)">+</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: CART + FORM -->
+        <div class="order-cart" id="order-cart">
+          <div class="cart-header">
+            <h3>🛒 Giỏ hàng</h3>
+            <div class="cart-count" id="cart-count">0</div>
+          </div>
+
+          <div id="cart-empty" class="cart-empty">
+            <div class="cart-empty-icon">🍜</div>
+            <p>Chưa có món nào<br>Thêm món từ menu bên trái!</p>
+          </div>
+
+          <div id="cart-items-wrap" style="display:none">
+            <div class="cart-items" id="cart-items"></div>
+            <div class="cart-total">
+              <span>Tổng cộng:</span>
+              <strong id="cart-total">0đ</strong>
+            </div>
+          </div>
+
+          <!-- CUSTOMER FORM -->
+          <div class="cart-form" id="cart-form" style="display:none">
+
+            <div class="form-group">
+              <label>Hình thức nhận</label>
+              <div class="order-type-btns">
+                <button class="ot-btn active" onclick="setOrderType(this,'giao')">🛵 Giao hàng</button>
+                <button class="ot-btn" onclick="setOrderType(this,'mang')">🏃 Mang về</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Họ tên *</label>
+              <input type="text" id="cust-name" placeholder="Nguyễn Văn A">
+            </div>
+
+            <div class="form-group">
+              <label>Số điện thoại *</label>
+              <input type="tel" id="cust-phone" placeholder="09xxxxxxxx">
+            </div>
+
+            <div id="address-group" class="form-group">
+              <label>Địa chỉ giao hàng *</label>
+              <input type="text" id="cust-address" placeholder="Số nhà, đường, phường, quận...">
+            </div>
+
+            <div class="form-group">
+              <label>Ghi chú</label>
+              <textarea id="cust-note" placeholder="Ít cay, không hành, thêm rau..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Phương thức thanh toán</label>
+              <div class="payment-opts">
+                <button class="pay-opt active" onclick="setPayment(this,'cash')">💵 Tiền mặt</button>
+                <button class="pay-opt" onclick="setPayment(this,'qr')">📲 QR Sacombank</button>
+              </div>
+              <div class="qr-box" id="qr-box">
+                <img src="images/payment-qr.jpeg" alt="QR Sacombank Cô Hạnh">
+                <div class="qr-info">
+                  <strong>NGUYEN THI THU HANH</strong>
+                  Sacombank – TNG50319151443
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="submit-section" id="submit-section" style="display:none">
+            <a id="btn-zalo" href="#" class="btn-zalo disabled" onclick="submitOrder(event,'zalo')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.524 3.657 1.435 5.163L2 22l4.956-1.424A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+              Gửi đơn qua Zalo
+            </a>
+            <a id="btn-sms" href="#" class="btn-sms disabled" onclick="submitOrder(event,'sms')">
+              📱 Gửi đơn qua SMS
+            </a>
+            <p class="submit-note">Đơn hàng sẽ gửi thẳng đến Cô Hạnh<br>SĐT: 0349 171 873 · Hotline: 0326 611 510</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">✅ Đơn hàng đã gửi!</div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo"><span class="logo-vn">BÚN BÒ</span><span class="logo-name">Cô Hạnh</span></div>
+          <p>Công thức gia truyền từ Quảng Ngãi<br>Duy nhất tại 190–192 Hà Tôn Quyền, P. Minh Phụng, TP.HCM</p>
+        </div>
+        <div class="footer-links">
+          <h4>Điều hướng</h4>
+          <ul>
+            <li><a href="index.html">Trang chủ</a></li>
+            <li><a href="menu.html">Thực đơn</a></li>
+            <li><a href="story.html">Câu chuyện</a></li>
+            <li><a href="reviews.html">Đánh giá</a></li>
+            <li><a href="contact.html">Liên hệ</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>Thông tin</h4>
+          <p>📍 190–192 Hà Tôn Quyền, P. Minh Phụng</p>
+          <p>🕐 6:30 – 22:00 hằng ngày</p>
+          <p>📞 <a href="tel:0349171873" style="color:rgba(255,255,255,0.65)">0349 171 873</a> – Cô Hạnh</p>
+          <p>📞 <a href="tel:0326611510" style="color:rgba(255,255,255,0.65)">0326 611 510</a> – Hotline</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Bún Bò Cô Hạnh · Không chi nhánh · 190–192 Hà Tôn Quyền, P. Minh Phụng</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+  <script>
+    // ── STATE ──
+    const cart = {};
+    const items = {};
+    let orderType = 'giao';
+    let payMethod = 'cash';
+
+    // Index all menu items
+    document.querySelectorAll('.order-item').forEach(el => {
+      const id = el.dataset.id;
+      items[id] = {
+        name: el.dataset.name,
+        price: parseInt(el.dataset.price),
+        emoji: el.dataset.emoji
+      };
+    });
+
+    // ── QUANTITY ──
+    function changeQty(e, id, delta) {
+      e.stopPropagation();
+      id = String(id);
+      cart[id] = Math.max(0, (cart[id] || 0) + delta);
+      if (cart[id] === 0) delete cart[id];
+      document.getElementById('qty-' + id).textContent = cart[id] || 0;
+      const el = document.querySelector(`[data-id="${id}"]`);
+      el.classList.toggle('in-cart', !!cart[id]);
+      renderCart();
+    }
+
+    // ── RENDER CART ──
+    function renderCart() {
+      const ids = Object.keys(cart);
+      const total = ids.reduce((s, id) => s + cart[id] * items[id].price, 0);
+      const count = ids.reduce((s, id) => s + cart[id], 0);
+
+      document.getElementById('cart-count').textContent = count;
+      document.getElementById('cart-empty').style.display = ids.length ? 'none' : 'block';
+      document.getElementById('cart-items-wrap').style.display = ids.length ? 'block' : 'none';
+      document.getElementById('cart-form').style.display = ids.length ? 'block' : 'none';
+      document.getElementById('submit-section').style.display = ids.length ? 'block' : 'none';
+
+      // Items list
+      const el = document.getElementById('cart-items');
+      el.innerHTML = ids.map(id => `
+        <div class="cart-item">
+          <span>${items[id].emoji}</span>
+          <span class="ci-name">${items[id].name}</span>
+          <span class="ci-qty">x${cart[id]}</span>
+          <span class="ci-price">${(cart[id]*items[id].price).toLocaleString('vi-VN')}đ</span>
+          <span class="ci-remove" onclick="removeItem('${id}')">×</span>
+        </div>
+      `).join('');
+
+      document.getElementById('cart-total').textContent =
+        total.toLocaleString('vi-VN') + 'đ';
+
+      // Enable/disable submit buttons
+      const hasItems = ids.length > 0;
+      document.getElementById('btn-zalo').classList.toggle('disabled', !hasItems);
+      document.getElementById('btn-sms').classList.toggle('disabled', !hasItems);
+    }
+
+    function removeItem(id) {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      cart[id] = 0;
+      delete cart[id];
+      document.getElementById('qty-' + id).textContent = 0;
+      if (el) el.classList.remove('in-cart');
+      renderCart();
+    }
+
+    // ── ORDER TYPE ──
+    function setOrderType(btn, type) {
+      orderType = type;
+      document.querySelectorAll('.ot-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('address-group').style.display =
+        type === 'giao' ? 'block' : 'none';
+    }
+
+    // ── PAYMENT ──
+    function setPayment(btn, method) {
+      payMethod = method;
+      document.querySelectorAll('.pay-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('qr-box').classList.toggle('show', method === 'qr');
+    }
+
+    // ── BUILD ORDER MESSAGE ──
+    function buildMessage() {
+      const name    = document.getElementById('cust-name').value.trim();
+      const phone   = document.getElementById('cust-phone').value.trim();
+      const address = document.getElementById('cust-address').value.trim();
+      const note    = document.getElementById('cust-note').value.trim();
+
+      if (!name || !phone) { alert('Vui lòng nhập họ tên và số điện thoại!'); return null; }
+      if (orderType === 'giao' && !address) { alert('Vui lòng nhập địa chỉ giao hàng!'); return null; }
+
+      const lines = Object.keys(cart).map(id =>
+        `  ${items[id].emoji} ${items[id].name} x${cart[id]} = ${(cart[id]*items[id].price).toLocaleString('vi-VN')}đ`
+      );
+      const total = Object.keys(cart).reduce((s,id) => s + cart[id]*items[id].price, 0);
+
+      let msg = `🍜 ĐƠN HÀNG BÚN BÒ CÔ HẠNH\n`;
+      msg += `──────────────────\n`;
+      msg += lines.join('\n') + '\n';
+      msg += `──────────────────\n`;
+      msg += `💰 Tổng: ${total.toLocaleString('vi-VN')}đ\n`;
+      msg += `──────────────────\n`;
+      msg += `👤 Tên: ${name}\n`;
+      msg += `📞 SĐT: ${phone}\n`;
+      msg += orderType === 'giao' ? `📍 Địa chỉ: ${address}\n` : `🏃 Mang về\n`;
+      msg += `💳 Thanh toán: ${payMethod === 'cash' ? 'Tiền mặt' : 'QR Sacombank'}\n`;
+      if (note) msg += `📝 Ghi chú: ${note}\n`;
+      msg += `──────────────────\n`;
+      msg += `Cảm ơn quý khách! 🙏`;
+      return msg;
+    }
+
+    // ── SUBMIT ──
+    function submitOrder(e, method) {
+      e.preventDefault();
+      const msg = buildMessage();
+      if (!msg) return;
+
+      const phone = '0349171873';
+      const encoded = encodeURIComponent(msg);
+
+      if (method === 'zalo') {
+        // Zalo deep link
+        window.open(`https://zalo.me/${phone}?message=${encoded}`, '_blank');
+      } else {
+        // SMS fallback
+        window.open(`sms:${phone}?body=${encoded}`, '_blank');
+      }
+
+      showToast('✅ Đang mở ' + (method === 'zalo' ? 'Zalo' : 'SMS') + '...');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
